@@ -1,3 +1,4 @@
+#include <asio.hpp>
 #include <SDL.h>
 #include <iostream>
 #include <algorithm>
@@ -6,13 +7,24 @@
 #include "CalibrationResult.h"
 #include "ControlState.h"
 
-#define DEBUG
+//#define DEBUG
 
 CalibrationResult calibrate_steering(std::vector<SDL_Joystick*> joysticks);
 CalibrationResult calibrate_pedal(std::vector<SDL_Joystick*> joysticks, const char* pedal);
 
 int main(int argc, char* args[])
 {
+
+	std::string ip_addr;
+	std::cout << "Enter the server's IP Address: ";
+	std::cin >> ip_addr;
+
+	asio::io_service io_service;
+	asio::ip::udp::socket socket(io_service);
+	asio::ip::udp::endpoint remote_endpoint;
+	socket.open(asio::ip::udp::v4());
+	remote_endpoint = asio::ip::udp::endpoint(asio::ip::address::from_string(ip_addr), 42069);
+
 	if (SDL_Init(SDL_INIT_JOYSTICK) < 0)
 	{
 		std::cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << '\n';
@@ -23,7 +35,9 @@ int main(int argc, char* args[])
 			std::cout << "Warning: No joysticks found!\n";
 		}
 		int num_joysticks = SDL_NumJoysticks();
+#ifdef DEBUG
 		std::cout << "Found " << num_joysticks << " joysticks\n";
+#endif
 		// To do it as an array. Vectors are nicer though.
 		//SDL_Joystick **joysticks = new SDL_Joystick*[num_joysticks];
 		std::vector<SDL_Joystick*> joysticks;
@@ -75,6 +89,7 @@ int main(int argc, char* args[])
 				std::cout << control_state.to_string() << '\n';
 #endif
 			}
+			socket.send_to(asio::buffer(control_state.to_string(), 15), remote_endpoint, 0);
 			SDL_Delay(5);
 		}
 		for (std::vector<SDL_Joystick*>::iterator joy_it = begin(joysticks); joy_it != end(joysticks); ++joy_it) {
