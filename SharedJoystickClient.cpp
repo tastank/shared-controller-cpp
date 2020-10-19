@@ -12,8 +12,7 @@
 CalibrationResult calibrate_steering(std::vector<SDL_Joystick*> joysticks);
 CalibrationResult calibrate_pedal(std::vector<SDL_Joystick*> joysticks, const char* pedal);
 
-int main(int argc, char* args[])
-{
+int main(int argc, char* args[]) {
 
 	std::string ip_addr;
 	std::cout << "Enter the server's IP Address: ";
@@ -25,12 +24,10 @@ int main(int argc, char* args[])
 	socket.open(asio::ip::udp::v4());
 	remote_endpoint = asio::ip::udp::endpoint(asio::ip::address::from_string(ip_addr), 42069);
 
-	if (SDL_Init(SDL_INIT_JOYSTICK) < 0)
-	{
+	if (SDL_Init(SDL_INIT_JOYSTICK) < 0) {
 		std::cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << '\n';
 	}
-	else
-	{
+	else {
 		if (SDL_NumJoysticks() < 1) {
 			std::cout << "Warning: No joysticks found!\n";
 		}
